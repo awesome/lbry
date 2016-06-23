@@ -812,7 +812,7 @@ class LBRYcrdWallet(LBRYWallet):
         return threads.deferToThread(self._get_decoded_tx_rpc, raw_tx)
 
     def _send_abandon(self, txid, address, amount):
-        return threads.deferToThread(self._send_abandon_rpc, txid, address, amount)
+        return threads.deferToThread(self._send_abandon_rpc, txid, address, Decimal(amount) if not isinstance(amount, Decimal) else amount)
 
     def get_claims_from_tx(self, txid):
         return threads.deferToThread(self._get_claims_from_tx_rpc, txid)

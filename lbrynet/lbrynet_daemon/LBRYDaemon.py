@@ -406,11 +406,11 @@ class LBRYDaemon(jsonrpc.JSONRPC):
 
         def _announce_startup():
             def _wait_for_credits():
-                if float(self.session.wallet.wallet_balance) == 0.0:
-                    self.startup_status = STARTUP_STAGES[6]
-                    return reactor.callLater(1, _wait_for_credits)
-                else:
-                    return _announce()
+                # if float(self.session.wallet.wallet_balance) == 0.0:
+                #     self.startup_status = STARTUP_STAGES[6]
+                #     return reactor.callLater(1, _wait_for_credits)
+                # else:
+                return _announce()
 
             def _announce():
                 self.announced_startup = True
@@ -1039,7 +1039,9 @@ class LBRYDaemon(jsonrpc.JSONRPC):
 
         def _get_stream(stream_info):
             def _wait_for_write():
-                if os.path.isfile(os.path.join(self.download_directory, self.streams[name].downloader.file_name)):
+                if not self.streams[name].downloader:
+                    written_bytes = False
+                elif os.path.isfile(os.path.join(self.download_directory, self.streams[name].downloader.file_name)):
                     written_file = file(os.path.join(self.download_directory, self.streams[name].downloader.file_name))
                     written_file.seek(0, os.SEEK_END)
                     written_bytes = written_file.tell()
@@ -1696,10 +1698,8 @@ class LBRYDaemon(jsonrpc.JSONRPC):
                                          {'stream_hash': l.sd_hash,
                                          'path': os.path.join(self.download_directory, l.file_name)})
                 d.addCallback(lambda message: self._render_response(message, OK_CODE))
-            else:
-                d = server.failure
-        else:
-            d = server.failure
+
+        d = self._render_response("Download failed", OK_CODE)
 
         return d
 
@@ -2036,6 +2036,7 @@ class LBRYDaemon(jsonrpc.JSONRPC):
             Returns:
                 True if payment successfully scheduled
         """
+        # TODO: return txid
 
         if 'amount' in p.keys() and 'address' in p.keys():
             amount = p['amount']
